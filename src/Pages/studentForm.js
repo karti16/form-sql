@@ -51,6 +51,7 @@ const StudentForm = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    validate();
   };
 
   const validate = () => {
@@ -59,7 +60,7 @@ const StudentForm = () => {
     temp.fullName = formData.fullName ? '' : 'This field is required.';
 
     temp.email =
-      /$^|.+@.+..+/.test(formData.email) && formData.email
+      /$^|.+@.+.+/.test(formData.email) && formData.email
         ? ''
         : 'Email is not valid.';
 
@@ -107,7 +108,7 @@ const StudentForm = () => {
   const classes = useStyle();
 
   return (
-    <Paper elevation={10}>
+    <Paper elevation={10} style={{ borderRadius: '10px' }}>
       <Grid>
         <Grid
           container
@@ -132,7 +133,6 @@ const StudentForm = () => {
               onChange={handleInputChange}
               variant="outlined"
               required
-              onBlur={validate}
             />
           </Grid>
           <Grid item paddingBottom={2} lg={6} md={6} sm={6} xs={6}>
@@ -144,7 +144,6 @@ const StudentForm = () => {
               onChange={handleInputChange}
               variant="outlined"
               required
-              onBlur={validate}
               {...(errors.email && {
                 error: true,
                 helperText: errors.email,
@@ -163,7 +162,6 @@ const StudentForm = () => {
               }}
               variant="outlined"
               required
-              onBlur={validate}
               {...(errors.phone && {
                 error: true,
                 helperText: errors.phone,
@@ -179,7 +177,6 @@ const StudentForm = () => {
               value={formData.department}
               variant="outlined"
               required
-              onBlur={validate}
               onChange={handleInputChange}
               {...(errors.department && {
                 error: true,
@@ -216,7 +213,6 @@ const StudentForm = () => {
                     target: { value: date, name: 'dateOfBirth' },
                   });
                 }}
-                onBlur={validate}
                 renderInput={(params) => (
                   <TextField
                     fullWidth
@@ -239,7 +235,6 @@ const StudentForm = () => {
               onChange={handleInputChange}
               variant="outlined"
               required
-              onBlur={validate}
               {...(errors.projectName && {
                 error: true,
                 helperText: errors.projectName,
