@@ -97,6 +97,7 @@ const StudentForm = () => {
     }
     setIsOpen(false);
   };
+
   const handleReset = () => {
     setFormData({
       ...initialFormData,
