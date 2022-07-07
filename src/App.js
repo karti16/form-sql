@@ -1,5 +1,4 @@
 import { Typography } from '@mui/material';
-import { maxWidth } from '@mui/system';
 import StudentForm from './Pages/studentForm';
 
 const appStyles = {
