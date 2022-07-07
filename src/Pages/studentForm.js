@@ -27,10 +27,8 @@ const initialFormData = {
   dateOfBirth: null,
   projectName: '',
   projectSubmit: 'yes',
-  vaccination: {
-    firstDose: '',
-    secondDose: '',
-  },
+  vaccinationFirstDose: false,
+  vaccinationSecondDose: false,
 };
 
 const useStyle = makeStyles((theme) => ({
@@ -44,17 +42,10 @@ const StudentForm = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [isOpen, setIsOpen] = useState(false);
-  const [vaccinationData, setVaccinationData] = useState({
-    firstDose: false,
-    secondDose: false,
-  });
 
   const handleCheckbox = (e) => {
     const { name, checked } = e.target;
-    setVaccinationData({ ...vaccinationData, [name]: checked });
-    handleInputChange({
-      target: { name: 'vaccination', value: vaccinationData },
-    });
+    setFormData({ ...formData, [name]: checked });
   };
 
   const handleInputChange = (e) => {
@@ -109,7 +100,7 @@ const StudentForm = () => {
     setFormData({
       ...initialFormData,
     });
-    setVaccinationData({ firstDose: false, secondDose: false });
+
     setErrors({});
   };
 
@@ -276,18 +267,18 @@ const StudentForm = () => {
               <FormLabel>Vaccination</FormLabel>
               <FormGroup>
                 <FormControlLabel
-                  checked={vaccinationData.firstDose}
+                  checked={formData.vaccinationFirstDose}
                   control={<Checkbox />}
                   label="1st dose"
-                  onChange={handleCheckbox}
-                  name="firstDose"
+                  onClick={handleCheckbox}
+                  name="vaccinationFirstDose"
                 />
                 <FormControlLabel
-                  checked={vaccinationData.secondDose}
+                  checked={formData.vaccinationSecondDose}
                   control={<Checkbox />}
                   label="2nd dose"
-                  onChange={handleCheckbox}
-                  name="secondDose"
+                  onClick={handleCheckbox}
+                  name="vaccinationSecondDose"
                 />
               </FormGroup>
             </FormControl>
