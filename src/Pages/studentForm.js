@@ -12,11 +12,12 @@ import {
   FormGroup,
   Button,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Snackbar from '@mui/material/Snackbar';
+import { format } from 'date-fns';
 
 //Initial form Data
 const initialFormData = {
@@ -26,9 +27,9 @@ const initialFormData = {
   department: '',
   dateOfBirth: null,
   projectName: '',
-  projectSubmit: 'yes',
-  vaccinationFirstDose: false,
-  vaccinationSecondDose: false,
+  projectSubmit: null,
+  vaccinationFirstDose: null,
+  vaccinationSecondDose: null,
 };
 
 const useStyle = makeStyles((theme) => ({
@@ -40,7 +41,7 @@ const useStyle = makeStyles((theme) => ({
 
 const StudentForm = () => {
   const [formData, setFormData] = useState(initialFormData);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState(initialFormData);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCheckbox = (e) => {
@@ -51,42 +52,75 @@ const StudentForm = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    validate();
   };
 
   const validate = () => {
-    let temp = { ...errors };
-
-    temp.fullName = formData.fullName ? '' : 'This field is required.';
-
-    temp.email =
-      /$^|.+@.+.+/.test(formData.email) && formData.email
-        ? ''
-        : 'Email is not valid.';
-
-    temp.phone =
-      formData.phone.length > 9 ? '' : 'Minimum 10 numbers required.';
-
-    temp.department = formData.department ? '' : 'Choose department';
-
-    temp.dateOfBirth = formData.dateOfBirth ? null : 'Select Date of Birth';
-
-    temp.projectName = formData.projectName ? '' : 'Enter project name';
-
-    temp.projectSubmit = formData.projectSubmit
-      ? ''
-      : 'This field is required.';
-
+    // let temp = { ...errors };
     setErrors({
-      ...temp,
+      ...errors,
+      fullName: formData.fullName ? '' : 'This field is required.',
     });
 
-    return Object.values(temp).every((x) => x === '' || x === null);
+    setErrors({
+      ...errors,
+      email: /$^|.+@.+.+/.test(formData.email) ? '' : 'Email is not valid.',
+    });
+    setErrors({
+      ...errors,
+      phone:
+        /^\d{10}$/.test(formData.phone) && format.phone !== ''
+          ? ''
+          : 'Minimum 10 numbers required.',
+    });
+    setErrors({
+      ...errors,
+      department: formData.department === '' ? '' : 'Choose department',
+    });
+
+    setErrors({
+      ...errors,
+      dateOfBirth: formData.dateOfBirth === '' ? null : 'Select Date of Birth',
+    });
+
+    setErrors({
+      ...errors,
+      projectName: formData.projectName === '' ? null : 'Enter project name',
+    });
+
+    setErrors({
+      ...errors,
+      projectSubmit:
+        formData.projectSubmit === '' ? null : 'This field is required.',
+    });
+    // errors.fullName = formData.fullName ? '' : 'This field is required.';
+
+    // errors.email =
+    //   /$^|.+@.+.+/.test(formData.email) && formData.email
+    //     ? ''
+    //     : 'Email is not valid.';
+
+    // temp.phone =
+    //   formData.phone.length > 9 ? '' : 'Minimum 10 numbers required.';
+
+    // temp.department = formData.department ? '' : 'Choose department';
+
+    // temp.dateOfBirth = formData.dateOfBirth ? null : 'Select Date of Birth';
+
+    // temp.projectName = formData.projectName ? '' : 'Enter project name';
+
+    // temp.projectSubmit = formData.projectSubmit
+    //   ? null
+    //   : 'This field is required.';
+
+    // setErrors({
+    //   ...temp,
+    // });
+    console.log(errors);
+    return Object.values(errors).every((x) => x === '' || x === null);
   };
 
   const handleSubmit = (e) => {
     if (validate()) {
-      console.log(formData);
       setIsOpen(true);
       handleReset();
     }
@@ -105,6 +139,11 @@ const StudentForm = () => {
 
     setErrors({});
   };
+
+  //Validating data when the formData is changing
+  useEffect(() => {
+    validate();
+  }, [formData]);
 
   const classes = useStyle();
 
