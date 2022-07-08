@@ -12,7 +12,7 @@ import {
   FormGroup,
   Button,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -41,20 +41,34 @@ const useStyle = makeStyles((theme) => ({
 const StudentForm = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
+  const [initialPageLoad, setInitialPageLoad] = useState(false);
+
+  //For submit notification pop up
   const [isOpen, setIsOpen] = useState(false);
 
+  //Separate function checkbox input
   const handleCheckbox = (e) => {
     const { name, checked } = e.target;
     setFormData({ ...formData, [name]: checked });
   };
 
+  //Handling inputs
   const handleInputChange = (e) => {
+    setInitialPageLoad(true);
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    validate();
   };
 
+  useEffect(() => {
+    console.log(errors);
+    if (initialPageLoad) {
+      validate();
+    }
+  }, [formData]);
+
+  //Validating input datas
   const validate = () => {
+    //temp object to storing errors
     let temp = { ...errors };
 
     temp.fullName = formData.fullName ? '' : 'This field is required.';
@@ -65,7 +79,9 @@ const StudentForm = () => {
         : 'Email is not valid.';
 
     temp.phone =
-      formData.phone.length > 9 ? '' : 'Minimum 10 numbers required.';
+      formData.phone.length === 10 || formData.phone
+        ? ''
+        : 'Minimum 10 numbers required.';
 
     temp.department = formData.department ? '' : 'Choose department';
 
@@ -81,16 +97,22 @@ const StudentForm = () => {
       ...temp,
     });
 
+    //Checks every value of the object and returns true if all condition passed.
+    //If any one condition fails it return false
     return Object.values(temp).every((x) => x === '' || x === null);
   };
 
+  // Handle submit action
   const handleSubmit = (e) => {
     if (validate()) {
       console.log(formData);
       setIsOpen(true);
       handleReset();
+      setInitialPageLoad(false);
     }
   };
+
+  //Snackbar notification close action
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -98,12 +120,14 @@ const StudentForm = () => {
     setIsOpen(false);
   };
 
+  //Reset form
   const handleReset = () => {
     setFormData({
       ...initialFormData,
     });
 
     setErrors({});
+    setInitialPageLoad(false);
   };
 
   const classes = useStyle();
