@@ -18,7 +18,6 @@ import { makeStyles } from '@mui/styles';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Snackbar from '@mui/material/Snackbar';
-import { format } from 'date-fns';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -97,7 +96,6 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
 
     setErrors({
       ...errors,
-      fullName: formData.fullName ? '' : 'This field is required.',
     });
 
     //Checks every value of the object and returns true if all condition passed.
