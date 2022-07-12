@@ -95,7 +95,7 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
       : 'This field is required.';
 
     setErrors({
-      ...errors,
+      ...temp,
     });
 
     //Checks every value of the object and returns true if all condition passed.
