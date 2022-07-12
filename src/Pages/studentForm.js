@@ -11,6 +11,7 @@ import {
   Checkbox,
   FormGroup,
   Button,
+  FormHelperText,
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
@@ -18,6 +19,8 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Snackbar from '@mui/material/Snackbar';
 import { format } from 'date-fns';
+import axios from 'axios';
+import moment from 'moment';
 
 //Initial form Data
 const initialFormData = {
@@ -28,116 +31,131 @@ const initialFormData = {
   dateOfBirth: null,
   projectName: '',
   projectSubmit: null,
-  vaccinationFirstDose: null,
-  vaccinationSecondDose: null,
+  vaccinationFirstDose: false,
+  vaccinationSecondDose: false,
 };
 
 const useStyle = makeStyles((theme) => ({
   root: {
     padding: '30px',
-    margin: 'auto',
   },
 }));
 
-const StudentForm = () => {
-  const [formData, setFormData] = useState(initialFormData);
-  const [errors, setErrors] = useState(initialFormData);
+const StudentForm = ({ editData, postUpdate, setOpen }) => {
+  const [formData, setFormData] = useState(
+    editData === undefined ? initialFormData : editData
+  );
+  const [errors, setErrors] = useState({});
+  const [isEmptyForm, setIsEmptyForm] = useState(true);
+
+  //For submit notification pop up
   const [isOpen, setIsOpen] = useState(false);
 
+  //Separate function checkbox input
   const handleCheckbox = (e) => {
     const { name, checked } = e.target;
     setFormData({ ...formData, [name]: checked });
   };
 
+  //Handling inputs
   const handleInputChange = (e) => {
+    setIsEmptyForm(false);
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (!isEmptyForm) {
+      validate();
+    }
+  }, [formData]);
+
+  //Validating input datas
   const validate = () => {
-    // let temp = { ...errors };
+    //temp object to storing errors
+    let temp = { ...errors };
+
+    temp.fullName = formData.fullName ? '' : 'This field is required.';
+
+    temp.email =
+      /$^|.+@.+.+/.test(formData.email) && formData.email
+        ? ''
+        : 'Email is not valid.';
+
+    temp.phone =
+      formData.phone.length === 10 ? '' : 'Minimum 10 numbers required.';
+
+    temp.department = formData.department ? '' : 'Choose department';
+
+    temp.dateOfBirth = formData.dateOfBirth ? null : 'Select Date of Birth';
+
+    temp.projectName = formData.projectName ? '' : 'Enter project name';
+
+    temp.projectSubmit = formData.projectSubmit
+      ? ''
+      : 'This field is required.';
+
     setErrors({
       ...errors,
       fullName: formData.fullName ? '' : 'This field is required.',
     });
 
-    setErrors({
-      ...errors,
-      email: /$^|.+@.+.+/.test(formData.email) ? '' : 'Email is not valid.',
-    });
-    setErrors({
-      ...errors,
-      phone:
-        /^\d{10}$/.test(formData.phone) && format.phone !== ''
-          ? ''
-          : 'Minimum 10 numbers required.',
-    });
-    setErrors({
-      ...errors,
-      department: formData.department === '' ? '' : 'Choose department',
-    });
-
-    setErrors({
-      ...errors,
-      dateOfBirth: formData.dateOfBirth === '' ? null : 'Select Date of Birth',
-    });
-
-    setErrors({
-      ...errors,
-      projectName: formData.projectName === '' ? null : 'Enter project name',
-    });
-
-    setErrors({
-      ...errors,
-      projectSubmit:
-        formData.projectSubmit === '' ? null : 'This field is required.',
-    });
-    // errors.fullName = formData.fullName ? '' : 'This field is required.';
-
-    // errors.email =
-    //   /$^|.+@.+.+/.test(formData.email) && formData.email
-    //     ? ''
-    //     : 'Email is not valid.';
-
-    // temp.phone =
-    //   formData.phone.length > 9 ? '' : 'Minimum 10 numbers required.';
-
-    // temp.department = formData.department ? '' : 'Choose department';
-
-    // temp.dateOfBirth = formData.dateOfBirth ? null : 'Select Date of Birth';
-
-    // temp.projectName = formData.projectName ? '' : 'Enter project name';
-
-    // temp.projectSubmit = formData.projectSubmit
-    //   ? null
-    //   : 'This field is required.';
-
-    // setErrors({
-    //   ...temp,
-    // });
-    console.log(errors);
-    return Object.values(errors).every((x) => x === '' || x === null);
+    //Checks every value of the object and returns true if all condition passed.
+    //If any one condition fails it return false
+    return Object.values(temp).every((x) => x === '' || x === null);
   };
 
+  // Handle submit action
   const handleSubmit = (e) => {
     if (validate()) {
       setIsOpen(true);
       handleReset();
+      setIsEmptyForm(true);
+      if (postUpdate) {
+        handleUpdate();
+      } else {
+        postData();
+      }
     }
   };
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+
+  //Add data to database
+  const postData = () => {
+    axios
+      .post('http://lap:3005/addData', formData)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  //Update post
+  const handleUpdate = () => {
+    axios
+      .post('http://lap:3005/updateData', formData)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    setOpen(false);
+  };
+  //Snackbar notification close action
+  const handleSnackbarClose = () => {
     setIsOpen(false);
   };
 
+  //Reset form
   const handleReset = () => {
     setFormData({
       ...initialFormData,
     });
 
     setErrors({});
+    setIsEmptyForm(true);
   };
 
   //Validating data when the formData is changing
@@ -241,30 +259,41 @@ const StudentForm = () => {
             </TextField>
           </Grid>
           <Grid item paddingBottom={2} lg={6} md={6} sm={6} xs={6}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Date of Birth"
-                name="dateOfBirth"
-                type="date"
-                required
-                value={formData.dateOfBirth}
-                onChange={(date) => {
-                  handleInputChange({
-                    target: { value: date, name: 'dateOfBirth' },
-                  });
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    fullWidth
-                    {...(errors.dateOfBirth && {
-                      error: true,
-                      helperText: errors.dateOfBirth,
-                    })}
-                    {...params}
-                  />
-                )}
-              />
-            </LocalizationProvider>
+            <FormControl
+              {...(errors.dateOfBirth && {
+                error: true,
+              })}
+            >
+              <FormLabel></FormLabel>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Date of Birth"
+                  name="dateOfBirth"
+                  type="date"
+                  required
+                  value={formData.dateOfBirth}
+                  onChange={(date) => {
+                    date = moment(date).subtract(10, 'days').calendar();
+                    handleInputChange({
+                      target: { value: date, name: 'dateOfBirth' },
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      fullWidth
+                      // {...(errors.dateOfBirth && {
+                      //   error: true,
+                      //   helperText: errors.dateOfBirth,
+                      // })}
+                      {...params}
+                    />
+                  )}
+                />
+              </LocalizationProvider>
+              <FormHelperText>
+                {errors.dateOfBirth && 'Enter Date'}
+              </FormHelperText>
+            </FormControl>
           </Grid>
           <Grid item paddingBottom={2} lg={6} md={6} sm={6} xs={6}>
             <TextField
@@ -274,7 +303,6 @@ const StudentForm = () => {
               value={formData.projectName}
               onChange={handleInputChange}
               variant="outlined"
-              required
               {...(errors.projectName && {
                 error: true,
                 helperText: errors.projectName,
@@ -332,12 +360,12 @@ const StudentForm = () => {
           </Grid>
           <Grid item paddingRight={4} paddingLeft={2}>
             <Button variant="contained" onClick={handleSubmit} mt={2}>
-              Submit
+              {postUpdate ? 'Update' : 'Submit'}
             </Button>
           </Grid>
           <Snackbar
             open={isOpen}
-            autoHideDuration={2000}
+            autoHideDuration={3000}
             message="Submitted Successfully"
             onClose={handleSnackbarClose}
           />
