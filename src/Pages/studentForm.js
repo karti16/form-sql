@@ -156,11 +156,6 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
     setIsEmptyForm(true);
   };
 
-  //Validating data when the formData is changing
-  useEffect(() => {
-    validate();
-  }, [formData]);
-
   const classes = useStyle();
 
   return (
