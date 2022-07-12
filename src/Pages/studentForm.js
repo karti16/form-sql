@@ -11,12 +11,15 @@ import {
   Checkbox,
   FormGroup,
   Button,
+  FormHelperText,
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Snackbar from '@mui/material/Snackbar';
+import axios from 'axios';
+import moment from 'moment';
 
 //Initial form Data
 const initialFormData = {
@@ -26,7 +29,7 @@ const initialFormData = {
   department: '',
   dateOfBirth: null,
   projectName: '',
-  projectSubmit: 'yes',
+  projectSubmit: null,
   vaccinationFirstDose: false,
   vaccinationSecondDose: false,
 };
@@ -34,14 +37,15 @@ const initialFormData = {
 const useStyle = makeStyles((theme) => ({
   root: {
     padding: '30px',
-    margin: 'auto',
   },
 }));
 
-const StudentForm = () => {
-  const [formData, setFormData] = useState(initialFormData);
+const StudentForm = ({ editData, postUpdate, setOpen }) => {
+  const [formData, setFormData] = useState(
+    editData === undefined ? initialFormData : editData
+  );
   const [errors, setErrors] = useState({});
-  const [initialPageLoad, setInitialPageLoad] = useState(false);
+  const [isEmptyForm, setIsEmptyForm] = useState(true);
 
   //For submit notification pop up
   const [isOpen, setIsOpen] = useState(false);
@@ -54,14 +58,13 @@ const StudentForm = () => {
 
   //Handling inputs
   const handleInputChange = (e) => {
-    setInitialPageLoad(true);
+    setIsEmptyForm(false);
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   useEffect(() => {
-    console.log(errors);
-    if (initialPageLoad) {
+    if (!isEmptyForm) {
       validate();
     }
   }, [formData]);
@@ -79,9 +82,7 @@ const StudentForm = () => {
         : 'Email is not valid.';
 
     temp.phone =
-      formData.phone.length === 10 || formData.phone
-        ? ''
-        : 'Minimum 10 numbers required.';
+      formData.phone.length === 10 ? '' : 'Minimum 10 numbers required.';
 
     temp.department = formData.department ? '' : 'Choose department';
 
@@ -108,15 +109,41 @@ const StudentForm = () => {
       console.log(formData);
       setIsOpen(true);
       handleReset();
-      setInitialPageLoad(false);
+      setIsEmptyForm(true);
+      if (postUpdate) {
+        handleUpdate();
+      } else {
+        postData();
+      }
     }
   };
 
+  //Add data to database
+  const postData = () => {
+    axios
+      .post('http://lap:3005/addData', formData)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  //Update post
+  const handleUpdate = () => {
+    axios
+      .post('http://lap:3005/updateData', formData)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    setOpen(false);
+  };
   //Snackbar notification close action
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  const handleSnackbarClose = () => {
     setIsOpen(false);
   };
 
@@ -127,7 +154,7 @@ const StudentForm = () => {
     });
 
     setErrors({});
-    setInitialPageLoad(false);
+    setIsEmptyForm(true);
   };
 
   const classes = useStyle();
@@ -226,30 +253,41 @@ const StudentForm = () => {
             </TextField>
           </Grid>
           <Grid item paddingBottom={2} lg={6} md={6} sm={6} xs={6}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Date of Birth"
-                name="dateOfBirth"
-                type="date"
-                required
-                value={formData.dateOfBirth}
-                onChange={(date) => {
-                  handleInputChange({
-                    target: { value: date, name: 'dateOfBirth' },
-                  });
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    fullWidth
-                    {...(errors.dateOfBirth && {
-                      error: true,
-                      helperText: errors.dateOfBirth,
-                    })}
-                    {...params}
-                  />
-                )}
-              />
-            </LocalizationProvider>
+            <FormControl
+              {...(errors.dateOfBirth && {
+                error: true,
+              })}
+            >
+              <FormLabel></FormLabel>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Date of Birth"
+                  name="dateOfBirth"
+                  type="date"
+                  required
+                  value={formData.dateOfBirth}
+                  onChange={(date) => {
+                    date = moment(date).subtract(10, 'days').calendar();
+                    handleInputChange({
+                      target: { value: date, name: 'dateOfBirth' },
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      fullWidth
+                      // {...(errors.dateOfBirth && {
+                      //   error: true,
+                      //   helperText: errors.dateOfBirth,
+                      // })}
+                      {...params}
+                    />
+                  )}
+                />
+              </LocalizationProvider>
+              <FormHelperText>
+                {errors.dateOfBirth && 'Enter Date'}
+              </FormHelperText>
+            </FormControl>
           </Grid>
           <Grid item paddingBottom={2} lg={6} md={6} sm={6} xs={6}>
             <TextField
@@ -259,7 +297,6 @@ const StudentForm = () => {
               value={formData.projectName}
               onChange={handleInputChange}
               variant="outlined"
-              required
               {...(errors.projectName && {
                 error: true,
                 helperText: errors.projectName,
@@ -317,12 +354,12 @@ const StudentForm = () => {
           </Grid>
           <Grid item paddingRight={4} paddingLeft={2}>
             <Button variant="contained" onClick={handleSubmit} mt={2}>
-              Submit
+              {postUpdate ? 'Update' : 'Submit'}
             </Button>
           </Grid>
           <Snackbar
             open={isOpen}
-            autoHideDuration={2000}
+            autoHideDuration={3000}
             message="Submitted Successfully"
             onClose={handleSnackbarClose}
           />

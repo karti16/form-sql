@@ -1,5 +1,11 @@
 import { Typography } from '@mui/material';
+import { useState } from 'react';
+import Header from './Pages/header';
+import Home from './Pages/home';
+import Sidebar from './Pages/sidebar';
 import StudentForm from './Pages/studentForm';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ViewData from './Pages/viewData';
 
 const appStyles = {
   backgroundColor: '',
@@ -9,26 +15,27 @@ const appStyles = {
   justifyContent: 'center',
 };
 
-const headerStyle = {
-  backgroundColor: '#426cf5',
-  color: 'white',
-  padding: '20px 10px',
-  margin: '0px ',
-  marginBottom: '20px',
-  display: 'flex',
-};
+const App = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-function App() {
   return (
     <>
-      <div style={headerStyle}>
-        <Typography variant="h4">Student Form</Typography>
-      </div>
-      <div style={appStyles}>
-        <StudentForm />
-      </div>
+      <BrowserRouter>
+        <Header isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} />
+        <div style={appStyles}>
+          <Sidebar
+            isDrawerOpen={isDrawerOpen}
+            setIsDrawerOpen={setIsDrawerOpen}
+          />
+
+          <Routes>
+            <Route exact path="/" element={<StudentForm />} />
+            <Route exact path="/list" element={<ViewData />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
     </>
   );
-}
+};
 
 export default App;
