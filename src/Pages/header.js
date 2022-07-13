@@ -6,10 +6,12 @@ const Header = ({ isDrawerOpen, setIsDrawerOpen }) => {
   const headerStyle = {
     backgroundColor: '#426cf5',
     color: 'white',
-    padding: '20px 10px',
+    padding: '5px 20px',
     margin: '0px ',
     marginBottom: '20px',
     display: 'flex',
+    alignItems: 'center',
+    gap: '20px',
   };
 
   return (
@@ -24,7 +26,8 @@ const Header = ({ isDrawerOpen, setIsDrawerOpen }) => {
       >
         <MenuIcon />
       </IconButton>
-      <Typography variant="h4">Student Form</Typography>
+
+      <Typography variant="h5">Student Form</Typography>
     </div>
   );
 };

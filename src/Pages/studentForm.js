@@ -40,7 +40,13 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-const StudentForm = ({ editData, postUpdate, setOpen }) => {
+const StudentForm = ({
+  editData,
+  postUpdate,
+  setEditDialogOpen,
+  isDrawerOpen,
+  setIsDrawerOpen,
+}) => {
   const [formData, setFormData] = useState(
     editData === undefined ? initialFormData : editData
   );
@@ -140,7 +146,7 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
       .catch(function (error) {
         console.log(error);
       });
-    setOpen(false);
+    setEditDialogOpen(false);
   };
   //Snackbar notification close action
   const handleSnackbarClose = () => {
@@ -360,7 +366,9 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
           <Snackbar
             open={isOpen}
             autoHideDuration={3000}
-            message="Submitted Successfully"
+            message={
+              postUpdate ? 'Updated Successfully' : 'Submitted Successfully'
+            }
             onClose={handleSnackbarClose}
           />
         </Grid>

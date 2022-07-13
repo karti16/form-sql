@@ -17,11 +17,16 @@ const appStyles = {
 
 const App = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isViewDataVisible, setIsViewDataVisible] = useState(false);
 
   return (
     <>
       <BrowserRouter>
-        <Header isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} />
+        <Header
+          isDrawerOpen={isDrawerOpen}
+          setIsDrawerOpen={setIsDrawerOpen}
+          isViewDataVisible={isViewDataVisible}
+        />
         <div style={appStyles}>
           <Sidebar
             isDrawerOpen={isDrawerOpen}
@@ -29,8 +34,26 @@ const App = () => {
           />
 
           <Routes>
-            <Route exact path="/" element={<StudentForm />} />
-            <Route exact path="/list" element={<ViewData />} />
+            <Route
+              exact
+              path="/"
+              element={
+                <StudentForm
+                  isDrawerOpen={isDrawerOpen}
+                  setIsDrawerOpen={setIsDrawerOpen}
+                />
+              }
+            />
+            <Route
+              exact
+              path="/list"
+              element={
+                <ViewData
+                  isDrawerOpen={isDrawerOpen}
+                  setIsDrawerOpen={setIsDrawerOpen}
+                />
+              }
+            />
           </Routes>
         </div>
       </BrowserRouter>
