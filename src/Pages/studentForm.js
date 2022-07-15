@@ -127,7 +127,7 @@ const StudentForm = ({
   //Add data to database
   const postData = () => {
     axios
-      .post('http://lap:3005/addData', formData)
+      .post('http://localhost:3005/addData', formData)
       .then(function (response) {
         console.log(response);
       })
@@ -139,7 +139,7 @@ const StudentForm = ({
   //Update post
   const handleUpdate = () => {
     axios
-      .post('http://lap:3005/updateData', formData)
+      .post('http://localhost:3005/updateData', formData)
       .then(function (response) {
         console.log(response);
       })
@@ -166,7 +166,7 @@ const StudentForm = ({
   const classes = useStyle();
 
   return (
-    <Paper elevation={10} style={{ borderRadius: '10px' }}>
+    <Paper elevation={10} style={{ borderRadius: '10px', width: '100vh' }}>
       <Grid>
         <Grid
           container

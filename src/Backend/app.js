@@ -7,7 +7,7 @@ const randomData = require('./randomData').randomData;
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'lklklk',
+  password: '',
   database: 'studentsForm',
 });
 
@@ -75,9 +75,20 @@ app.get('/getData', (req, res) => {
   });
 });
 
-//Delete post
+//Delete specific post
 app.get('/deletePost/:id', (req, res) => {
   let sql = `DELETE FROM students_table WHERE id = ${req.params.id}`;
+  db.query(sql, (err, result) => {
+    if (err) {
+      throw err;
+    }
+    res.send(result);
+  });
+});
+
+//Delete All post
+app.get('/deleteAllPost', (req, res) => {
+  let sql = `DELETE FROM students_table`;
   db.query(sql, (err, result) => {
     if (err) {
       throw err;
@@ -108,14 +119,6 @@ app.get('/addRandomData', (req, res) => {
     if (err) {
       throw err;
     }
-    res.send('Form data added');
-  });
-
-  db.query(sql, data, (err, result) => {
-    if (err) {
-      throw err;
-    }
-
     res.send('Form data added');
   });
 });

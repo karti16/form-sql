@@ -9,7 +9,7 @@ import ViewData from './Pages/viewData';
 
 const appStyles = {
   backgroundColor: '',
-  maxWidth: '80vh',
+  padding: '0px 30px',
   margin: 'auto',
   display: 'flex',
   justifyContent: 'center',
