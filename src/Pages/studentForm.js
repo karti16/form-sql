@@ -40,7 +40,13 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-const StudentForm = ({ editData, postUpdate, setOpen }) => {
+const StudentForm = ({
+  editData,
+  postUpdate,
+  setEditDialogOpen,
+  isDrawerOpen,
+  setIsDrawerOpen,
+}) => {
   const [formData, setFormData] = useState(
     editData === undefined ? initialFormData : editData
   );
@@ -120,7 +126,7 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
   //Add data to database
   const postData = () => {
     axios
-      .post('http://lap:3005/addData', formData)
+      .post('http://localhost:3005/addData', formData)
       .then(function (response) {
         console.log(response);
       })
@@ -132,14 +138,14 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
   //Update post
   const handleUpdate = () => {
     axios
-      .post('http://lap:3005/updateData', formData)
+      .post('http://localhost:3005/updateData', formData)
       .then(function (response) {
         console.log(response);
       })
       .catch(function (error) {
         console.log(error);
       });
-    setOpen(false);
+    setEditDialogOpen(false);
   };
   //Snackbar notification close action
   const handleSnackbarClose = () => {
@@ -159,7 +165,7 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
   const classes = useStyle();
 
   return (
-    <Paper elevation={10} style={{ borderRadius: '10px' }}>
+    <Paper elevation={10} style={{ borderRadius: '10px', width: '100vh' }}>
       <Grid>
         <Grid
           container
@@ -359,7 +365,9 @@ const StudentForm = ({ editData, postUpdate, setOpen }) => {
           <Snackbar
             open={isOpen}
             autoHideDuration={3000}
-            message="Submitted Successfully"
+            message={
+              postUpdate ? 'Updated Successfully' : 'Submitted Successfully'
+            }
             onClose={handleSnackbarClose}
           />
         </Grid>

@@ -12,21 +12,45 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import Edit from '@mui/icons-material/Edit';
 import Dialog from '@mui/material/Dialog';
 import StudentForm from './studentForm';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
+import { useNavigate } from 'react-router-dom';
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const tableHeaderStyle = {
   fontWeight: '900',
   textAlign: 'center',
   fontSize: '80%',
 };
-
-const ViewData = () => {
+const viewDataBtnStyles = {
+  // width: '100%',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  paddingBottom: '20px',
+};
+const ViewData = ({ isDrawerOpen, setIsDrawerOpen }) => {
   const [studentData, setStudentData] = useState([]);
   const [noData, setNoData] = useState();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editData, setEditData] = useState();
+  const [delDialogOpen, setDelDialogOpen] = useState(false);
+  const [idToBeDelete, setIdToBeDelete] = useState();
+  const [loading, setLoading] = useState(true);
 
+  let navigate = useNavigate();
   useEffect(() => {
     axios
-      .get('http://lap:3005/getData')
+      .get('http://localhost:3005/getData')
       .then(function (response) {
+        setLoading(false);
         setStudentData(response.data);
 
         if (!response.data.length) {
@@ -38,9 +62,9 @@ const ViewData = () => {
       .catch(function (error) {});
   }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     await axios
-      .get(`http://lap:3005/deletePost/${id}`)
+      .get(`http://localhost:3005/deletePost/${idToBeDelete}`)
       .then(function (response) {
         console.log(response);
         fetchDataManually();
@@ -50,8 +74,9 @@ const ViewData = () => {
 
   const fetchDataManually = () => {
     axios
-      .get('http://lap:3005/getData')
+      .get('http://localhost:3005/getData')
       .then(function (response) {
+        setLoading(false);
         setStudentData(response.data);
         if (!response.data.length) {
           setNoData(true);
@@ -62,29 +87,57 @@ const ViewData = () => {
       .catch(function (error) {});
   };
 
-  const [open, setOpen] = useState(false);
-  const [editData, setEditData] = useState();
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = (value) => {
-    setOpen(false);
-  };
-
   const handleEdit = (id) => {
     const data = studentData.find((item) => {
       return item.id === id;
     });
     setEditData(data);
-    handleClickOpen();
+    setEditDialogOpen(true);
+  };
+
+  const handleRandomData = () => {
+    axios
+      .get('http://localhost:3005/addRandomData')
+      .then(function (response) {
+        fetchDataManually();
+      })
+      .catch(function (error) {});
+  };
+
+  const handleDeleteAll = () => {
+    axios
+      .get('http://localhost:3005/deleteAllPost')
+      .then(function (response) {
+        fetchDataManually();
+      })
+      .catch(function (error) {});
+  };
+
+  const handleRefresh = () => {
+    setNoData(false);
+    setLoading(true);
+    setStudentData([]);
+    fetchDataManually();
   };
 
   return (
     <>
-      <Grid Container>
-        <Grid item lg={12} xs={6} sm={6} md={4}>
+      <Grid container>
+        <Grid item style={viewDataBtnStyles} lg={12} md={12} sm={12} xs={12}>
+          <Stack spacing={2} direction="row">
+            <Button variant="text" onClick={handleRefresh}>
+              <RefreshIcon />
+              Refresh
+            </Button>
+            <Button variant="contained" onClick={handleRandomData}>
+              Add Random Data
+            </Button>
+            <Button variant="outlined" color="error" onClick={handleDeleteAll}>
+              Delete All Data
+            </Button>
+          </Stack>
+        </Grid>
+        <Grid item lg={12}>
           <Paper elevation={10}>
             <TableContainer sx={{ width: '700' }}>
               <Table sx={{ tableLayout: 'auto' }}>
@@ -110,10 +163,22 @@ const ViewData = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
+                  {loading && (
+                    <TableRow key={'loading'}>
+                      <TableCell
+                        colSpan={11}
+                        align="center"
+                        style={{ fontSize: '110%' }}
+                      >
+                        <CircularProgress />
+                      </TableCell>
+                    </TableRow>
+                  )}
+
                   {noData && (
                     <TableRow key={'noRecord'}>
                       <TableCell
-                        colSpan={9}
+                        colSpan={11}
                         align="center"
                         style={{ fontSize: '110%' }}
                       >
@@ -121,6 +186,7 @@ const ViewData = () => {
                       </TableCell>
                     </TableRow>
                   )}
+
                   {studentData &&
                     studentData.map((row) => (
                       <TableRow key={row.id}>
@@ -145,7 +211,8 @@ const ViewData = () => {
                         <TableCell>
                           <IconButton
                             onClick={() => {
-                              handleDelete(row.id);
+                              setIdToBeDelete(row.id);
+                              setDelDialogOpen(true);
                             }}
                             size="large"
                             edge="start"
@@ -172,12 +239,71 @@ const ViewData = () => {
               </Table>
             </TableContainer>
           </Paper>
+
+          <Dialog
+            open={editDialogOpen}
+            onClose={() => {
+              setEditDialogOpen(false);
+            }}
+          >
+            <StudentForm
+              setEditDialogOpen={setEditDialogOpen}
+              postUpdate={true}
+              editData={editData}
+            />
+          </Dialog>
+          <Dialog
+            open={delDialogOpen}
+            onClose={() => {
+              setDelDialogOpen(false);
+            }}
+          >
+            <DialogTitle id="alert-dialog-title">
+              {'Do you want delete the data ?'}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                This operation can't be undone. Data will be deleted
+                permanently.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => {
+                  setDelDialogOpen(false);
+                }}
+              >
+                No
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                size="large"
+                onClick={() => {
+                  handleDelete();
+                  setDelDialogOpen(false);
+                }}
+                autoFocus
+              >
+                Yes
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Box style={{ position: 'fixed', right: '20px', bottom: '20px' }}>
+            <Fab
+              color="primary"
+              size="large"
+              onClick={() => {
+                navigate('/', { replace: true });
+              }}
+            >
+              <AddIcon />
+            </Fab>
+          </Box>
         </Grid>
       </Grid>
-      <Dialog open={open} onClose={handleClose}>
-        <StudentForm setOpen={setOpen} postUpdate={true} editData={editData} />
-      </Dialog>
-      <Dialog></Dialog>
     </>
   );
 };
